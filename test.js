@@ -1,6 +1,7 @@
 var axios = require('axios');
 const { REST, Routes, escapeItalic, Options } = require('discord.js');
 const { Client, GatewayIntentBits } = require('discord.js');
+const EventEmitter = require('events');
 const { rawListeners } = require('process');
 const client = new Client({ intents: [GatewayIntentBits.Guilds]});
 const rest = new REST({ version: '10'}).setToken('MTAxOTQyNDY2NjEwMTc2NDIxOA.GharUk.E9TpXqKrwjv7VRBxn3koUQ3e1Nmq8-omfYycZE');
@@ -9,6 +10,8 @@ const readline = require('readline').createInterface({
     input: process.stdin,
     output: process.stdout
     });
+
+EventEmitter.setMaxListeners(14);
 
 const commands =
 [
@@ -24,13 +27,11 @@ const commands =
 
 ];
 
-function getCompliment(url) 
+async function getCompliment(url) 
 {
-    axios.get('https://complimentr.com/api').then(res => {
-    console.log(`Status Code: ${res.status}`);
+    const res = await axios.get('https://complimentr.com/api');
     //return JSON.parse(res);
-    return res;
-    }).catch(error => { console.error(error) });
+    return res.data;
 }
 
 (async () => 
@@ -67,11 +68,8 @@ client.on('interactionCreate', async interaction =>
 
 async function escape() 
 {
-    while (true) 
-    {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        readline.on('line', (input) => { if (input == 'exit') { process.exit(0); }});
-    }
+    await new Promise(resolve => setTimeout(resolve, 500));
+    readline.on('line', (input) => { if (input == 'stop') { process.exit(0); }});
 }
 
 escape();

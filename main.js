@@ -14,7 +14,7 @@ const readline = require('readline').createInterface(
         output: process.stdout
     });
 
-let compBuffer;
+let compliment;
 
 const commands =
 [
@@ -65,7 +65,8 @@ client.on('interactionCreate', async interaction =>
     }
     else if (interaction.commandName === 'compliment')
     {
-        
+        compliment = getCompliment();
+        await interaction.reply(`@${interaction.author.name}, ${compliment} :)`);
     }
 });
 

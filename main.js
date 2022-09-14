@@ -1,7 +1,7 @@
 //For HTTP & HTTPS Requests
 var axios = require('axios');
 //Sensitive info hidden from the Git Repo
-const keys = require("../nerdDetectorBot/keys.json");
+const keys = require("./keys.json");
 const { REST, Routes, escapeItalic, Options } = require('discord.js');
 const { Client, GatewayIntentBits } = require('discord.js');
 const EventEmitter = require('events');
@@ -14,6 +14,7 @@ const readline = require('readline').createInterface(
         output: process.stdout
     });
 
+let compBuffer;
 
 const commands =
 [
@@ -33,6 +34,7 @@ async function getCompliment(url)
 {
     const res = await axios.get('https://complimentr.com/api');
     //return JSON.parse(res);
+    console.log(`Data from your api query: ${res.data}`);
     return res.data;
 }
 
@@ -85,4 +87,4 @@ async function escape()
 escape();
 console.log(getCompliment());
 
-client.login(keys.token);
+//client.login(keys.token);

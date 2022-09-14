@@ -1,4 +1,4 @@
-const https = require('https');
+var axios = require('axios');
 const { REST, Routes, escapeItalic, Options } = require('discord.js');
 const { Client, GatewayIntentBits } = require('discord.js');
 const { rawListeners } = require('process');
@@ -26,27 +26,19 @@ const commands =
 
 function getCompliment(url) 
 {
-    let data = '';
-    var options = { hostname: 'https://complimentr.com/api', method: 'GET', port: 443 };
-    const req = https.request(options, res => { console.log(`statusCode: ${res.statusCode}`) 
-    
-    req.on('data', chunk => {
-        data += chunk;
-        });
-    });
-    req.on('end', () => {
-        return JSON.parse(data);
-        req.end();
-    });
-
-};
+    axios.get('https://complimentr.com/api').then(res => {
+    console.log(`Status Code: ${res.status}`);
+    //return JSON.parse(res);
+    return res;
+    }).catch(error => { console.error(error) });
+}
 
 (async () => 
 {
     try 
     {
         console.log('Started refresing application slash commands.');
-        await rest.put(Routes.applicationCommands(CLIENT_ID), {body: commands});
+//        await rest.put(Routes.applicationCommands(CLIENT_ID), {body: commands});
         console.log('Successfully reloaded application slash commands.');
     }
     catch (error) 
@@ -81,7 +73,8 @@ async function escape()
         readline.on('line', (input) => { if (input == 'exit') { process.exit(0); }});
     }
 }
-escape();
-getCompliment();
 
-client.login('MTAxOTQyNDY2NjEwMTc2NDIxOA.GharUk.E9TpXqKrwjv7VRBxn3koUQ3e1Nmq8-omfYycZE');
+escape();
+console.log(getCompliment());
+
+//client.login('MTAxOTQyNDY2NjEwMTc2NDIxOA.GharUk.E9TpXqKrwjv7VRBxn3koUQ3e1Nmq8-omfYycZE');

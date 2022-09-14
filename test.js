@@ -1,11 +1,14 @@
+//For HTTP & HTTPS Requests
 var axios = require('axios');
+//Sensitive info hidden from the Git Repo
+const keys = require("../nerdDetectorBot/keys.json");
 const { REST, Routes, escapeItalic, Options } = require('discord.js');
 const { Client, GatewayIntentBits } = require('discord.js');
 const EventEmitter = require('events');
 const { rawListeners } = require('process');
 const client = new Client({ intents: [GatewayIntentBits.Guilds]});
-const rest = new REST({ version: '10'}).setToken('MTAxOTQyNDY2NjEwMTc2NDIxOA.GharUk.E9TpXqKrwjv7VRBxn3koUQ3e1Nmq8-omfYycZE');
-const CLIENT_ID = '1019424666101764218';
+const rest = new REST({ version: '10'}).setToken(keys.token);
+
 const readline = require('readline').createInterface({
     input: process.stdin,
     output: process.stdout
@@ -39,7 +42,7 @@ async function getCompliment(url)
     try 
     {
         console.log('Started refresing application slash commands.');
-//        await rest.put(Routes.applicationCommands(CLIENT_ID), {body: commands});
+//        await rest.put(Routes.applicationCommands(keys.appid), {body: commands});
         console.log('Successfully reloaded application slash commands.');
     }
     catch (error) 
@@ -75,4 +78,4 @@ async function escape()
 escape();
 console.log(getCompliment());
 
-//client.login('MTAxOTQyNDY2NjEwMTc2NDIxOA.GharUk.E9TpXqKrwjv7VRBxn3koUQ3e1Nmq8-omfYycZE');
+client.login(keys.token);

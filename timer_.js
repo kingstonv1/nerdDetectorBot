@@ -32,7 +32,7 @@ class timer_
             }
         }
 
-        return `\r\x1b[kUptime: ${this.days}d, ${this.hours}h, ${this.minutes}m, ${this.seconds}s`;
+        return `\r\x1b[kUptime: ${this.days}d ${this.hours}h ${this.minutes}m ${this.seconds}s`;
     }
 };
 

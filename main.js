@@ -3,14 +3,16 @@
 //For HTTP & HTTPS Requests
 var axios = require('axios');
 //Sensitive info hidden from the Git Repo
-const keys = require("./keys.json");
+const keys = require('./keys.json');
 //My timer class, used to handle bot uptime timer
-const timer_ = require("./timer.js");
+const timer_ = require('./timer_.js');
+const uptime = new timer_();
 
 const { REST, Routes, escapeItalic, Options } = require('discord.js');
 const { Client, GatewayIntentBits } = require('discord.js');
 const EventEmitter = require('events');
 const { rawListeners } = require('process');
+const { SlashCommandBuilder } = require('discord.js');
 const client = new Client({ intents: [GatewayIntentBits.Guilds]});
 const rest = new REST({ version: '10'}).setToken(keys.token);
 const readline = require('readline').createInterface(
@@ -19,21 +21,17 @@ const readline = require('readline').createInterface(
         output: process.stdout
     });
 
-    let compliment;
+    let compStr;
     
-    const commands =
-    [
-    {
-        name: "ping",
-        description: "pong :)"
-    },
-    {
-        name: "compliment",
-        description: "let someone know they're very cool",
-        Options: [{ name: 'user', description: 'the user to compliment' }]
-    }
 
-];
+    const compliment = new SlashCommandBuilder()
+        .setName('compliment')
+        .setDescription('Let someone know how awesome they are.')
+        .addUserOption(option =>
+            option.setName('user')
+            .setDescription('The user to compliment')
+            .setRequired(true));
+    
 
 //Define Functions
 
@@ -52,7 +50,6 @@ async function handleInput()
     readline.on('line', (input) => { if (input == 'stop') { process.exit(0); }});
 }
 
-
 //Initalize discord slash commands
 
 (async () => 
@@ -60,7 +57,7 @@ async function handleInput()
     try 
     {
         console.log('Started refresing application slash commands.');
-//        await rest.put(Routes.applicationCommands(keys.appid), {body: commands});
+        await rest.put(Routes.applicationCommands(keys.appid), {body: commands});
         console.log('Successfully reloaded application slash commands.');
     }
     catch (error) 
@@ -103,3 +100,4 @@ client.on('messageCreate', async message => //Any time a message is sent
 handleInput();
 console.log(JSON.stringify(getCompliment()));
 client.login(keys.token);
+setInterval(() => process.stdout.write(uptime.increment()), 1000);

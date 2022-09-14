@@ -21,8 +21,10 @@ const readline = require('readline').createInterface(
         output: process.stdout
     });
 
-    let compStr;
-    
+    let comp;
+    let commands = new Array(); 
+
+    const ping = new SlashCommandBuilder().setName('ping').setDescription('pong :)');
 
     const compliment = new SlashCommandBuilder()
         .setName('compliment')
@@ -31,16 +33,16 @@ const readline = require('readline').createInterface(
             option.setName('user')
             .setDescription('The user to compliment')
             .setRequired(true));
-    
+        
+    commands.push(compliment.toJSON());
+    commands.push(ping.toJSON());
 
 //Define Functions
 
-async function getCompliment(url) 
+async function getCompliment() 
 {
     const res = await axios.get('https://complimentr.com/api');
-    //return JSON.parse(res);
-    console.log(`Data from your api query: ${res.data}`);
-    return res.data;
+    return res;
 }
 
 //handleInput runs in the background, ending the program if the user ever types "stop". May be expanded to handle other arguments.
@@ -73,7 +75,7 @@ client.on('ready', () => //On program start
     client.user.setPresence({ activities: [{ type: "Detecting", name: "nerds..."}], status: "online" });
 });
 
-client.on('interactionCreate', async interaction => //When the user interacts with the bot, typically via a slash command
+client.on('interactionCreate', async interaction  => //When the user interacts with the bot, typically via a slash command
 {
     if (!interaction.isChatInputCommand()) return;
     if (interaction.commandName === 'ping') 
@@ -82,15 +84,16 @@ client.on('interactionCreate', async interaction => //When the user interacts wi
     }
     else if (interaction.commandName === 'compliment')
     {
-        compliment = getCompliment();
-        await interaction.reply(`@${interaction.author.name}, ${compliment} :)`);
+        let res = await getCompliment();
+        await interaction.reply(`${interaction.options.getUser('user')}, ${res.data.compliment} :)`);
     }
 });
 
-client.on('messageCreate', async message => //Any time a message is sent
+client.on('message', async message => //Any time a message is sent
 {
     //If a message is sent by Isaac (currently me)
-    if (message.author.id === '546827180404113426') 
+    message.reply(`Your ID is: ${message.user.id}.`);
+    if (message.user.id === '546827180404113426') 
     {
         message.react('\:nerding\:');
     }
@@ -98,6 +101,5 @@ client.on('messageCreate', async message => //Any time a message is sent
 
 
 handleInput();
-console.log(JSON.stringify(getCompliment()));
 client.login(keys.token);
 setInterval(() => process.stdout.write(uptime.increment()), 1000);

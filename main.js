@@ -1,7 +1,12 @@
+//Define Constants
+
 //For HTTP & HTTPS Requests
 var axios = require('axios');
 //Sensitive info hidden from the Git Repo
 const keys = require("./keys.json");
+//My timer class, used to handle bot uptime timer
+const timer_ = require("./timer.js");
+
 const { REST, Routes, escapeItalic, Options } = require('discord.js');
 const { Client, GatewayIntentBits } = require('discord.js');
 const EventEmitter = require('events');
@@ -14,10 +19,10 @@ const readline = require('readline').createInterface(
         output: process.stdout
     });
 
-let compliment;
-
-const commands =
-[
+    let compliment;
+    
+    const commands =
+    [
     {
         name: "ping",
         description: "pong :)"
@@ -30,6 +35,8 @@ const commands =
 
 ];
 
+//Define Functions
+
 async function getCompliment(url) 
 {
     const res = await axios.get('https://complimentr.com/api');
@@ -37,6 +44,16 @@ async function getCompliment(url)
     console.log(`Data from your api query: ${res.data}`);
     return res.data;
 }
+
+//handleInput runs in the background, ending the program if the user ever types "stop". May be expanded to handle other arguments.
+async function handleInput() 
+{
+    await new Promise(resolve => setTimeout(resolve, 500));
+    readline.on('line', (input) => { if (input == 'stop') { process.exit(0); }});
+}
+
+
+//Initalize discord slash commands
 
 (async () => 
 {
@@ -50,13 +67,16 @@ async function getCompliment(url)
         { console.error(error); }
 })();
 
-client.on('ready', () => 
+
+//Bot's reactions to a variety of events
+
+client.on('ready', () => //On program start
 {
     console.log(`Logged in as ${client.user.tag}!`);
     client.user.setPresence({ activities: [{ type: "Detecting", name: "nerds..."}], status: "online" });
 });
 
-client.on('interactionCreate', async interaction => 
+client.on('interactionCreate', async interaction => //When the user interacts with the bot, typically via a slash command
 {
     if (!interaction.isChatInputCommand()) return;
     if (interaction.commandName === 'ping') 
@@ -70,7 +90,7 @@ client.on('interactionCreate', async interaction =>
     }
 });
 
-client.on('messageCreate', async message => 
+client.on('messageCreate', async message => //Any time a message is sent
 {
     //If a message is sent by Isaac (currently me)
     if (message.author.id === '546827180404113426') 
@@ -79,13 +99,7 @@ client.on('messageCreate', async message =>
     }
 });
 
-async function escape() 
-{
-    await new Promise(resolve => setTimeout(resolve, 500));
-    readline.on('line', (input) => { if (input == 'stop') { process.exit(0); }});
-}
 
-escape();
-console.log(getCompliment());
-
-//client.login(keys.token);
+handleInput();
+console.log(JSON.stringify(getCompliment()));
+client.login(keys.token);

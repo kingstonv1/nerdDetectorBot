@@ -13,7 +13,8 @@ const { Client, GatewayIntentBits } = require('discord.js');
 const EventEmitter = require('events');
 const { rawListeners } = require('process');
 const { SlashCommandBuilder } = require('discord.js');
-const client = new Client({ intents: [GatewayIntentBits.Guilds]});
+const allIntents = new Intents(32767);
+const client = new Client({ intents: allIntents });
 const rest = new REST({ version: '10'}).setToken(keys.token);
 const readline = require('readline').createInterface(
     {

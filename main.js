@@ -1,9 +1,10 @@
 //Define Constants
 
 //For HTTP & HTTPS Requests
-var axios = require('axios');
+let axios = require('axios');
 //Sensitive info hidden from the Git Repo
-const keys = require('./keys.json');
+const keys = require('dotenv').config();
+console.log(process.env);
 //My timer class, used to handle bot uptime timer
 const timer_ = require('./timer_.js');
 const uptime = new timer_();
@@ -48,7 +49,7 @@ async function get(what)
             res = await axios.get('https://complimentr.com/api');
             break;
         case 'article':
-            res = await axios.get('https://en.wikipedia.org/api/rest_v1/page/random');
+            res = await axios.get('https://en.wikipedia.org/api/rest_v1/page/random/summary');
             break;
     
         default:
@@ -66,12 +67,12 @@ async function handleInput()
         if (input == 'stop') { process.exit(0); }
         
         //debug commands below
-        if (input === 'wiki') 
+        else if (input === 'wiki') 
         {
             let res = await get('article');
-            console.log(`Your article: ${res.keys}`);
+            console.log(`Your article: ${res.data.content_urls.desktop.page}`);
         }
-        if (input === 'comp') 
+        else if (input === 'comp') 
         { 
             let res = await get('compliment');
             console.log(`Your compliment: ${res.data.compliment}`);

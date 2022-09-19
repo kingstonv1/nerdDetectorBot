@@ -15,7 +15,7 @@ const EventEmitter = require('events');
 const { rawListeners } = require('process');
 const { SlashCommandBuilder } = require('discord.js');
 const client = new Client({ intents: [7796] });
-const rest = new REST({ version: '10'}).setToken(keys.token);
+const rest = new REST({ version: '10'}).setToken(process.env.TOKEN);
 const readline = require('readline').createInterface(
     {
         input: process.stdin,
@@ -94,7 +94,7 @@ async function handleInput()
         
         
         //Disabled while I'm at school. Throws an exception due to the firewall
-        //await rest.put(Routes.applicationCommands(keys.appid), {body: commands});
+        //await rest.put(Routes.applicationCommands(process.env.APPID), {body: commands});
         
         
         
@@ -144,7 +144,7 @@ handleInput();
 
 /*
 Removing discord features while I work on other things (I am at school and the firewall smites my application)
-client.login(keys.token);
+client.login(process.env.TOKEN);
 
 */
 

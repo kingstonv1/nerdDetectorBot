@@ -1,8 +1,11 @@
 //Define Constants
 
 //For HTTP & HTTPS Requests
+
 const axios = require('axios');
 //Sensitive info hidden from the Git Repo
+const keys = require('dotenv').config();
+console.log(process.env);
 //My timer class, used to handle bot uptime timer
 const timer_ = require('./timer_.js');
 const uptime = new timer_();
@@ -47,7 +50,7 @@ async function get(what)
             res = await axios.get('https://complimentr.com/api');
             break;
         case 'article':
-            res = await axios.get('https://en.wikipedia.org/api/rest_v1/page/random');
+            res = await axios.get('https://en.wikipedia.org/api/rest_v1/page/random/summary');
             break;
     
         default:
@@ -60,7 +63,25 @@ async function get(what)
 async function handleInput() 
 {
     await new Promise(resolve => setTimeout(resolve, 500));
-    readline.on('line', (input) => { if (input == 'stop') { process.exit(0); }});
+    readline.on('line', async (input) => 
+    { 
+        if (input == 'stop') { process.exit(0); }
+        
+        //debug commands below
+        else if (input === 'wiki') 
+        {
+            let res = await get('article');
+            console.log(`Your article: ${res.data.content_urls.desktop.page}`);
+        }
+        else if (input === 'comp') 
+        { 
+            let res = await get('compliment');
+            console.log(`Your compliment: ${res.data.compliment}`);
+        }
+        
+        //Prints a message if input does not match a command.
+        else { console.log('invalid input.'); }
+    });
 }
 
 //Initalize discord slash commands
@@ -70,7 +91,18 @@ async function handleInput()
     try 
     {
         console.log('Started refresing application slash commands.');
-        await rest.put(Routes.applicationCommands(process.env.APPID), {body: commands});
+
+        
+        
+        
+        //Disabled while I'm at school. Throws an exception due to the firewall
+        //await rest.put(Routes.applicationCommands(keys.appid), {body: commands});
+        
+        
+        
+        
+        
+
         console.log('Successfully reloaded application slash commands.');
     }
     catch (error) 

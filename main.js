@@ -1,63 +1,89 @@
 //Define Constants
 
 //For HTTP & HTTPS Requests
-var axios = require('axios');
+const axios = require('axios');
 //Sensitive info hidden from the Git Repo
-const keys = require('./keys.json');
+const dotenv = require('dotenv').config('/home/kingstonv/projects/discord/keys.env');
+
 //My timer class, used to handle bot uptime timer
 const timer_ = require('./timer_.js');
 const uptime = new timer_();
 
 const { REST, Routes, escapeItalic, Options } = require('discord.js');
-const { Client, GatewayIntentBits } = require('discord.js');
+const { Client } = require('discord.js');
+const EventEmitter = require('events'); //Could possibly be removed? I'm not going to do it while I can't test, though.
+const { rawListeners } = require('process'); //^^^
 const { SlashCommandBuilder } = require('discord.js');
-const { joinVoiceChannel } = require('@discordjs/voice');
-const { createAudioPlayer } = require('@discordjs/voice');
-const EventEmitter = require('events');
-const { rawListeners } = require('process');
-const { channel } = require('diagnostics_channel');
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.DirectMessages, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildScheduledEvents]});
-const rest = new REST({ version: '10'}).setToken(keys.token);
-const readline = require('readline').createInterface(
-    {
-        input: process.stdin,
-        output: process.stdout
-    });
+const client = new Client({ intents: [7796] });
+const rest = new REST({ version: '10'}).setToken(process.env.TOKEN);
+const readline = require('readline').createInterface({ input: process.stdin,    output: process.stdout });
 
-    let comp;
-    let commands = new Array(); 
 
-    const ping = new SlashCommandBuilder().setName('ping').setDescription('pong :)');
+let commands = new Array(); 
 
-    const compliment = new SlashCommandBuilder()
-        .setName('compliment')
-        .setDescription('Let someone know how awesome they are.')
-        .addUserOption(option =>
-            option.setName('user')
-            .setDescription('The user to compliment')
-            .setRequired(true));
-        
-    const outro = new SlashCommandBuilder()
-        .setName('outro')
-        .setDescription('Play an epic outro 😎');
-        
-    commands.push(compliment.toJSON());
-    commands.push(ping.toJSON());
-    commands.push(outro.toJSON());
+const ping = new SlashCommandBuilder().setName('ping').setDescription('pong :)');
+
+const compliment = new SlashCommandBuilder()
+    .setName('compliment')
+    .setDescription('Let someone know how awesome they are.')
+    .addUserOption(option =>
+        option.setName('user')
+        .setDescription('The user to compliment')
+        .setRequired(true));
+
+const wiki = new SlashCommandBuilder().setName('wikirandom').setDescription('Fetch a random wikipedia page!');
+    
+commands.push(compliment.toJSON());
+commands.push(ping.toJSON());
+commands.push(wiki.toJSON());
 
 //Define Functions
 
-async function getCompliment() 
+async function get(what) 
 {
-    const res = await axios.get('https://complimentr.com/api');
+    let res;    
+    switch (what) 
+    {
+        case 'compliment':
+            res = await axios.get('https://complimentr.com/api');
+            break;
+        case 'article':
+            res = await axios.get('https://en.wikipedia.org/api/rest_v1/page/random/summary');
+            break;
+    
+        default:
+            throw 'No selection for what to get.';
+    }
     return res;
 }
 
-//handleInput runs in the background, ending the program if the user ever types "stop". May be expanded to handle other arguments.
+//handleInput runs in the background, checking the user's command line input against a list of commands.
 async function handleInput() 
 {
     await new Promise(resolve => setTimeout(resolve, 500));
-    readline.on('line', (input) => { if (input == 'stop') { process.exit(0); }});
+    readline.on('line', async (input) => 
+    { 
+        let res;
+        
+        switch (input) {
+            case 'stop':
+                process.exit(0);
+            
+            case 'wiki':
+                res = await get('article');
+                console.log(`Your article: ${res.data.content_urls.desktop.page}`);
+                break;
+            
+            case 'comp':
+                res = await get('compliment');
+                console.log(`Your compliment: ${res.data.compliment}`);
+                break;
+        
+            default:
+                console.log('invalid input.');
+                break;
+        }
+    });
 }
 
 //Initalize discord slash commands
@@ -67,7 +93,7 @@ async function handleInput()
     try 
     {
         console.log('Started refresing application slash commands.');
-        await rest.put(Routes.applicationCommands(keys.appid), {body: commands});
+        await rest.put(Routes.applicationCommands(process.env.APPID), {body: commands});
         console.log('Successfully reloaded application slash commands.');
     }
     catch (error) 
@@ -86,29 +112,39 @@ client.on('ready', () => //On program start
 client.on('interactionCreate', async interaction  => //When the user interacts with the bot, typically via a slash command
 {
     if (!interaction.isChatInputCommand()) return;
-    if (interaction.commandName === 'ping') 
+    switch (interaction.commandName) 
     {
-        await interaction.reply('Pong!');
-    }
-    else if (interaction.commandName === 'compliment')
-    {
-        let res = await getCompliment();
-        await interaction.reply(`${interaction.options.getUser('user')}, ${res.data.compliment} :)`);
-    }
-    else if (interaction.commandName === 'outro')
-    {
-        // const connection = joinVoiceChannel
-        // ({
-        //     channelId: interaction.user.voice.channel.id,
-        //     guildId: interaction.user.guild.id,
-        //     adapterCreator: interaction.user.voice.channel.id
-        // });
-        const player = createAudioPlayer();
-        const outro = createAudioResource('/home/kingstonv/outro.mp3');
-        interaction.member.voice.channel.join();
-        player.play(outro);
-        player.stop();
-        // connection.destroy();
+        case 'ping':
+            await interaction.reply('Pong!');
+            break;
+        
+        case 'compliment':
+            let res = await get('compliment');
+            await interaction.reply(`${interaction.options.getUser('user')}, ${res.data.compliment} :)`);
+            break;
+        
+        case 'outro':
+            // const connection = joinVoiceChannel
+            // ({
+            //     channelId: interaction.user.voice.channel.id,
+            //     guildId: interaction.user.guild.id,
+            //     adapterCreator: interaction.user.voice.channel.id
+            // });
+            const player = createAudioPlayer();
+            const outro = createAudioResource('/home/kingstonv/outro.mp3');
+            interaction.member.voice.channel.join();
+            player.play(outro);
+            player.stop();
+            // connection.destroy();
+            break;
+
+        case 'wikiRandom':
+            res = await get('article');
+            await interaction.reply(`Here is your wiki article:\n${res.data.content_urls.desktop.page}`);
+            break;
+
+        default:
+            break;
     }
 });
 
@@ -127,6 +163,7 @@ client.on('messageCreate', async message => //Any time a message is sent
 });
 
 
+
 handleInput();
-client.login(keys.token);
+client.login(process.env.TOKEN);
 setInterval(() => process.stdout.write(uptime.increment()), 1000);

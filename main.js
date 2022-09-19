@@ -1,9 +1,8 @@
 //Define Constants
 
 //For HTTP & HTTPS Requests
-var axios = require('axios');
+const axios = require('axios');
 //Sensitive info hidden from the Git Repo
-const keys = require('./keys.json');
 //My timer class, used to handle bot uptime timer
 const timer_ = require('./timer_.js');
 const uptime = new timer_();
@@ -14,7 +13,7 @@ const EventEmitter = require('events');
 const { rawListeners } = require('process');
 const { SlashCommandBuilder } = require('discord.js');
 const client = new Client({ intents: [7796] });
-const rest = new REST({ version: '10'}).setToken(keys.token);
+const rest = new REST({ version: '10'}).setToken(process.env.TOKEN);
 const readline = require('readline').createInterface(
     {
         input: process.stdin,
@@ -71,7 +70,7 @@ async function handleInput()
     try 
     {
         console.log('Started refresing application slash commands.');
-        await rest.put(Routes.applicationCommands(keys.appid), {body: commands});
+        await rest.put(Routes.applicationCommands(process.env.APPID), {body: commands});
         console.log('Successfully reloaded application slash commands.');
     }
     catch (error) 
@@ -113,5 +112,5 @@ client.on('message', async message => //Any time a message is sent
 
 
 handleInput();
-client.login(keys.token);
+client.login(process.env.TOKEN);
 setInterval(() => process.stdout.write(uptime.increment()), 1000);

@@ -61,7 +61,25 @@ async function get(what)
 async function handleInput() 
 {
     await new Promise(resolve => setTimeout(resolve, 500));
-    readline.on('line', (input) => { if (input == 'stop') { process.exit(0); }});
+    readline.on('line', async (input) => 
+    { 
+        if (input == 'stop') { process.exit(0); }
+        
+        //debug commands below
+        if (input === 'wiki') 
+        {
+            let res = await get('article');
+            console.log(`Your article: ${res.keys}`);
+        }
+        if (input === 'comp') 
+        { 
+            let res = await get('compliment');
+            console.log(`Your compliment: ${res.data.compliment}`);
+        }
+        
+        //Prints a message if input does not match a command.
+        else { console.log('invalid input.'); }
+    });
 }
 
 //Initalize discord slash commands
@@ -71,7 +89,16 @@ async function handleInput()
     try 
     {
         console.log('Started refresing application slash commands.');
-        await rest.put(Routes.applicationCommands(keys.appid), {body: commands});
+        
+        
+        
+        //Disabled while I'm at school. Throws an exception due to the firewall
+        //await rest.put(Routes.applicationCommands(keys.appid), {body: commands});
+        
+        
+        
+        
+        
         console.log('Successfully reloaded application slash commands.');
     }
     catch (error) 
@@ -113,5 +140,11 @@ client.on('message', async message => //Any time a message is sent
 
 
 handleInput();
+
+/*
+Removing discord features while I work on other things (I am at school and the firewall smites my application)
 client.login(keys.token);
+
+*/
+
 setInterval(() => process.stdout.write(uptime.increment()), 1000);

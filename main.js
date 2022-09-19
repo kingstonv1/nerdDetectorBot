@@ -39,9 +39,21 @@ const readline = require('readline').createInterface(
 
 //Define Functions
 
-async function getCompliment() 
+async function get(what) 
 {
-    const res = await axios.get('https://complimentr.com/api');
+    let res;    
+    switch (what) 
+    {
+        case 'compliment':
+            res = await axios.get('https://complimentr.com/api');
+            break;
+        case 'article':
+            res = await axios.get('https://en.wikipedia.org/api/rest_v1/page/random');
+            break;
+    
+        default:
+            throw 'No selection for what to get.';
+    }
     return res;
 }
 
@@ -84,7 +96,7 @@ client.on('interactionCreate', async interaction  => //When the user interacts w
     }
     else if (interaction.commandName === 'compliment')
     {
-        let res = await getCompliment();
+        let res = await get('compliment');
         await interaction.reply(`${interaction.options.getUser('user')}, ${res.data.compliment} :)`);
     }
 });

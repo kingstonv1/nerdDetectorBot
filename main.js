@@ -10,10 +10,13 @@ const uptime = new timer_();
 
 const { REST, Routes, escapeItalic, Options } = require('discord.js');
 const { Client, GatewayIntentBits } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
+const { joinVoiceChannel } = require('@discordjs/voice');
+const { createAudioPlayer } = require('@discordjs/voice');
 const EventEmitter = require('events');
 const { rawListeners } = require('process');
-const { SlashCommandBuilder } = require('discord.js');
-const client = new Client({ intents: [GatewayIntentBits.Guilds]});
+const { channel } = require('diagnostics_channel');
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.DirectMessages, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildScheduledEvents]});
 const rest = new REST({ version: '10'}).setToken(keys.token);
 const readline = require('readline').createInterface(
     {
@@ -34,8 +37,13 @@ const readline = require('readline').createInterface(
             .setDescription('The user to compliment')
             .setRequired(true));
         
+    const outro = new SlashCommandBuilder()
+        .setName('outro')
+        .setDescription('Play an epic outro 😎');
+        
     commands.push(compliment.toJSON());
     commands.push(ping.toJSON());
+    commands.push(outro.toJSON());
 
 //Define Functions
 
@@ -87,15 +95,34 @@ client.on('interactionCreate', async interaction  => //When the user interacts w
         let res = await getCompliment();
         await interaction.reply(`${interaction.options.getUser('user')}, ${res.data.compliment} :)`);
     }
+    else if (interaction.commandName === 'outro')
+    {
+        // const connection = joinVoiceChannel
+        // ({
+        //     channelId: interaction.user.voice.channel.id,
+        //     guildId: interaction.user.guild.id,
+        //     adapterCreator: interaction.user.voice.channel.id
+        // });
+        const player = createAudioPlayer();
+        const outro = createAudioResource('/home/kingstonv/outro.mp3');
+        interaction.member.voice.channel.join();
+        player.play(outro);
+        player.stop();
+        // connection.destroy();
+    }
 });
 
-client.on('message', async message => //Any time a message is sent
+client.on('messageCreate', async message => //Any time a message is sent
 {
-    //If a message is sent by Isaac (currently me)
-    message.reply(`Your ID is: ${message.user.id}.`);
-    if (message.user.id === '546827180404113426') 
+    //If a message is sent by Isaac
+    if (message.author.id === '546827180404113426') 
     {
-        message.react('\:nerding\:');
+        const nerding = client.emojis.cache.find(emoji => emoji.name === "nerding");
+        message.react(nerding);
+    }
+    if (message.content.indexOf('3232') !== -1) 
+    {
+        message.reply('don\'t do that.');
     }
 });
 

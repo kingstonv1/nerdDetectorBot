@@ -1,42 +1,37 @@
 //Define Constants
 
 //For HTTP & HTTPS Requests
-let axios = require('axios');
+const axios = require('axios');
 //Sensitive info hidden from the Git Repo
 const keys = require('dotenv').config();
-console.log(process.env);
 //My timer class, used to handle bot uptime timer
 const timer_ = require('./timer_.js');
 const uptime = new timer_();
 
 const { REST, Routes, escapeItalic, Options } = require('discord.js');
-const { Client, GatewayIntentBits } = require('discord.js');
-const EventEmitter = require('events');
-const { rawListeners } = require('process');
+const { Client } = require('discord.js');
+const EventEmitter = require('events'); //Could possibly be removed? I'm not going to do it while I can't test, though.
+const { rawListeners } = require('process'); //^^^
 const { SlashCommandBuilder } = require('discord.js');
 const client = new Client({ intents: [7796] });
 const rest = new REST({ version: '10'}).setToken(process.env.TOKEN);
-const readline = require('readline').createInterface(
-    {
-        input: process.stdin,
-        output: process.stdout
-    });
+const readline = require('readline').createInterface({ input: process.stdin,    output: process.stdout });
 
-    let comp;
-    let commands = new Array(); 
 
-    const ping = new SlashCommandBuilder().setName('ping').setDescription('pong :)');
+let commands = new Array(); 
 
-    const compliment = new SlashCommandBuilder()
-        .setName('compliment')
-        .setDescription('Let someone know how awesome they are.')
-        .addUserOption(option =>
-            option.setName('user')
-            .setDescription('The user to compliment')
-            .setRequired(true));
-        
-    commands.push(compliment.toJSON());
-    commands.push(ping.toJSON());
+const ping = new SlashCommandBuilder().setName('ping').setDescription('pong :)');
+
+const compliment = new SlashCommandBuilder()
+    .setName('compliment')
+    .setDescription('Let someone know how awesome they are.')
+    .addUserOption(option =>
+        option.setName('user')
+        .setDescription('The user to compliment')
+        .setRequired(true));
+    
+commands.push(compliment.toJSON());
+commands.push(ping.toJSON());
 
 //Define Functions
 
@@ -58,28 +53,32 @@ async function get(what)
     return res;
 }
 
-//handleInput runs in the background, ending the program if the user ever types "stop". May be expanded to handle other arguments.
+//handleInput runs in the background, checking the user's command line input against a list of commands.
 async function handleInput() 
 {
     await new Promise(resolve => setTimeout(resolve, 500));
     readline.on('line', async (input) => 
     { 
-        if (input == 'stop') { process.exit(0); }
+        let res;
         
-        //debug commands below
-        else if (input === 'wiki') 
-        {
-            let res = await get('article');
-            console.log(`Your article: ${res.data.content_urls.desktop.page}`);
-        }
-        else if (input === 'comp') 
-        { 
-            let res = await get('compliment');
-            console.log(`Your compliment: ${res.data.compliment}`);
-        }
+        switch (input) {
+            case 'stop':
+                process.exit(0);
+            
+            case 'wiki':
+                res = await get('article');
+                console.log(`Your article: ${res.data.content_urls.desktop.page}`);
+                break;
+            
+            case 'comp':
+                res = await get('compliment');
+                console.log(`Your compliment: ${res.data.compliment}`);
+                break;
         
-        //Prints a message if input does not match a command.
-        else { console.log('invalid input.'); }
+            default:
+                console.log('invalid input.');
+                break;
+        }
     });
 }
 
@@ -90,16 +89,8 @@ async function handleInput()
     try 
     {
         console.log('Started refresing application slash commands.');
-        
-        
-        
         //Disabled while I'm at school. Throws an exception due to the firewall
         //await rest.put(Routes.applicationCommands(process.env.APPID), {body: commands});
-        
-        
-        
-        
-        
         console.log('Successfully reloaded application slash commands.');
     }
     catch (error) 
@@ -141,11 +132,8 @@ client.on('message', async message => //Any time a message is sent
 
 
 handleInput();
-
 /*
 Removing discord features while I work on other things (I am at school and the firewall smites my application)
 client.login(process.env.TOKEN);
-
 */
-
 setInterval(() => process.stdout.write(uptime.increment()), 1000);

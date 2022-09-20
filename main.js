@@ -19,6 +19,7 @@ const rest = new REST({ version: '10'}).setToken(process.env.TOKEN);
 const readline = require('readline').createInterface({ input: process.stdin,    output: process.stdout });
 
 
+
 let commands = new Array(); 
 
 const ping = new SlashCommandBuilder().setName('ping').setDescription('pong :)');
@@ -161,8 +162,6 @@ client.on('messageCreate', async message => //Any time a message is sent
         message.reply('don\'t do that.');
     }
 });
-
-
 
 handleInput();
 client.login(process.env.TOKEN);
